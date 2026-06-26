@@ -432,6 +432,32 @@ public class frDonationTest {
         Opportunity newOpportunity = [SELECT Id, fr_ID__c, Funraise_Pledge__c FROM Opportunity WHERE fr_Id__c = :oppFrId];
         System.assertEquals(pledge.Id, newOpportunity.Funraise_Pledge__c, 'The new donation should be pointing at the pledge that the supporter had active');
     }
+
+    static testMethod void syncEntity_LinkToCommitmentPledge() {
+        if (frUtil.hasNPCobjects()) {
+            return;
+        }
+        createMapping('name', 'Name');
+        createMapping('donation_cretime', 'CloseDate');
+
+        Contact testSupporter = frDonorTest.getTestContact();
+
+        Pledge__c pledge = getTestPledge(testSupporter);
+        pledge.fr_ID__c = 'commitment-2048';
+        insert pledge;
+
+        Map<String, Object> request = getTestRequest();
+        request.put('commitmentId', pledge.fr_ID__c);
+        frTestUtil.createTestPost(request);
+        Test.startTest();
+        frWSDonationController.syncEntity();
+        Test.stopTest();
+
+        frTestUtil.assertNoErrors();
+        String oppFrId = String.valueOf(request.get('id'));
+        Opportunity newOpportunity = [SELECT Id, fr_ID__c, Funraise_Pledge__c FROM Opportunity WHERE fr_Id__c = :oppFrId];
+        System.assertEquals(pledge.Id, newOpportunity.Funraise_Pledge__c, 'The new donation should be linked to the pledge from commitmentId');
+    }
     
     static testMethod void syncEntity_LinkToPledge_NPC() {
         if (!frUtil.hasNPCobjects()) {
@@ -459,6 +485,36 @@ public class frDonationTest {
         
         List<SObject> gt = Database.query('SELECT Id, OriginalAmount, fr_ID__c, Funraise_GT_Pledge__c FROM GiftTransaction');
         System.assertNotEquals(null, gt[0].get('Funraise_GT_Pledge__c'));
+    }
+
+    static testMethod void syncEntity_LinkToCommitmentPledge_NPC() {
+        if (!frUtil.hasNPCobjects()) {
+            return;
+        }
+        createMapping('name', 'Name');
+        insert frSetupController.getGiftTransactionDefaults();
+        insert new frMapping__c(Type__c = 'Gift Transaction', Name = 'donation_cretime',
+                                fr_Name__c = 'donation_cretime', sf_Name__c = 'CheckDate');
+
+        Account testAccount = frDonortest.getTestAccount(true);
+
+        Pledge__c pledge = getTestPledgeAcc(testAccount);
+        pledge.fr_ID__c = 'commitment-2048';
+        insert pledge;
+
+        Map<String, Object> request = getTestRequest();
+        request.put('donorId', '856');
+        request.put('commitmentId', pledge.fr_ID__c);
+        frTestUtil.createTestPost(request);
+
+        Test.startTest();
+        frWSDonationController.syncEntity();
+        Test.stopTest();
+
+        frTestUtil.assertNoErrors();
+        String oppFrId = String.valueOf(request.get('id'));
+        List<SObject> gt = Database.query('SELECT Id, fr_ID__c, Funraise_GT_Pledge__c FROM GiftTransaction WHERE fr_ID__c = :oppFrId');
+        System.assertEquals(pledge.Id, gt[0].get('Funraise_GT_Pledge__c'));
     }
     
     static testMethod void syncEntity_PledgeCreatesPledge() {

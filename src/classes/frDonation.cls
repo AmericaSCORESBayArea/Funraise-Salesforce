@@ -135,7 +135,7 @@ public class frDonation extends frModel implements frSyncable {
         if (String.isNotBlank(pledgeId)) {
             List<Pledge__c> pledges = [SELECT Id FROM Pledge__c WHERE fr_ID__c = :pledgeId];
             if (pledges.size() > 0) {
-                o.put('PledgeId', pledges.get(0).get('Id'));
+                o.put(PLEDGE_LOOKUP_FIELD_NAME, pledges.get(0).get('Id'));
             } else {
                 frUtil.logRelationshipError(getFrType(), funraiseId,frUtil.Entity.PLEDGE, pledgeId);
             }
@@ -418,6 +418,7 @@ public class frDonation extends frModel implements frSyncable {
     public static final String SUPPORTER_OBJ_NAME = frUtil.hasNPCobjects() ? 'Account' : 'Contact';
     public static final String SUBSCRIPTION_OBJ_NAME = frUtil.hasNPCobjects() ? 'GiftCommitment' : 'Subscription__c';
     public static final String SUBSCRIPTION_LOOKUP_FIELD_NAME = frUtil.hasNPCobjects() ? 'GiftCommitmentId' : 'Subscription__c';
+    public static final String PLEDGE_LOOKUP_FIELD_NAME = frUtil.hasNPCobjects() ? 'Funraise_GT_Pledge__c' : 'Funraise_Pledge__c';
     
     //Donation statuses
     private static final String COMPLETE = 'Complete';
