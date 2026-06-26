@@ -419,7 +419,7 @@ public class frDonation extends frModel implements frSyncable {
     public static final String SUBSCRIPTION_OBJ_NAME = frUtil.hasNPCobjects() ? 'GiftCommitment' : 'Subscription__c';
     public static final String SUBSCRIPTION_LOOKUP_FIELD_NAME = frUtil.hasNPCobjects() ? 'GiftCommitmentId' : 'Subscription__c';
     public static final String PLEDGE_LOOKUP_FIELD_NAME = frUtil.hasNPCobjects() ? 'Funraise_GT_Pledge__c' : 'Funraise_Pledge__c';
-    
+
     //Donation statuses
     private static final String COMPLETE = 'Complete';
     private static final String PENDING = 'Pending';

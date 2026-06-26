@@ -458,7 +458,7 @@ public class frDonationTest {
         Opportunity newOpportunity = [SELECT Id, fr_ID__c, Funraise_Pledge__c FROM Opportunity WHERE fr_Id__c = :oppFrId];
         System.assertEquals(pledge.Id, newOpportunity.Funraise_Pledge__c, 'The new donation should be linked to the pledge from commitmentId');
     }
-    
+
     static testMethod void syncEntity_LinkToPledge_NPC() {
         if (!frUtil.hasNPCobjects()) {
             return;
@@ -516,7 +516,7 @@ public class frDonationTest {
         List<SObject> gt = Database.query('SELECT Id, fr_ID__c, Funraise_GT_Pledge__c FROM GiftTransaction WHERE fr_ID__c = :oppFrId');
         System.assertEquals(pledge.Id, gt[0].get('Funraise_GT_Pledge__c'));
     }
-    
+
     static testMethod void syncEntity_PledgeCreatesPledge() {
         if (frUtil.hasNPCobjects()) {
             return;
