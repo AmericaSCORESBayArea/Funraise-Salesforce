@@ -70,6 +70,19 @@
         <type>Checkbox</type>
     </fields>
     <fields>
+        <fullName>Campaign_Page__c</fullName>
+        <deleteConstraint>SetNull</deleteConstraint>
+        <deprecated>false</deprecated>
+        <externalId>false</externalId>
+        <label>Campaign Page</label>
+        <referenceTo>Campaign</referenceTo>
+        <relationshipLabel>Funraise Pledges</relationshipLabel>
+        <relationshipName>Funraise_Pledges</relationshipName>
+        <required>false</required>
+        <trackTrending>false</trackTrending>
+        <type>Lookup</type>
+    </fields>
+    <fields>
         <fullName>End_Date__c</fullName>
         <deprecated>false</deprecated>
         <description>The date on which this pledge should be considered inactive and donations will stop automatically counting towards fulfilling it</description>
@@ -158,19 +171,6 @@
         <trackTrending>false</trackTrending>
         <type>Text</type>
         <unique>true</unique>
-    </fields>
-    <fields>
-        <fullName>Campaign_Page__c</fullName>
-        <deleteConstraint>SetNull</deleteConstraint>
-        <deprecated>false</deprecated>
-        <externalId>false</externalId>
-        <label>Campaign Page</label>
-        <referenceTo>Campaign</referenceTo>
-        <relationshipLabel>Funraise Pledges</relationshipLabel>
-        <relationshipName>Funraise_Pledges</relationshipName>
-        <required>false</required>
-        <trackTrending>false</trackTrending>
-        <type>Lookup</type>
     </fields>
     <fields>
         <fullName>Received_Amount__c</fullName>
