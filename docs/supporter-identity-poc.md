@@ -11,8 +11,8 @@ CLI. Do not point it at a production Salesforce or Funraise environment.
 Two Funraise supporter IDs may identify one Salesforce Person Account:
 
 - `Account.fr_ID__c` remains the latest directly synced Funraise supporter ID.
-- `Supporter_Identity__c` stores every known Funraise supporter ID and email,
-  with a required lookup to the Person Account.
+- `Supporter_Identity__c` stores one row per known Funraise supporter ID, one
+  associated email when supplied, and a required lookup to the Person Account.
 - NPC relationship syncs resolve an ID against both locations.
 - Conflicting ownership or multiple donor matches are logged for manual review;
   the code does not pick an arbitrary record.
@@ -96,5 +96,5 @@ Funraise's setup instructions.
   activity.
 - Add administrator UI/reporting for ambiguous identity errors and controlled
   alias reassignment.
-- Have Funraise accept and release the change in its managed package, or plan a
-  fully supported migration from that package to a maintained custom fork.
+- Define a supported process for deploying and upgrading the maintained
+  `AmericaSCORESBayArea` fork without propagating this change upstream.
