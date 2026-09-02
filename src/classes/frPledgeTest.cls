@@ -49,7 +49,7 @@ public class frPledgeTest {
 
         if (frUtil.hasNPCobjects()) {
             Account testAccount = frDonorTest.getTestAccount(true);
-            request.put('supporterId', testAccount.fr_ID__c);
+            request.put('supporterId', frDonorTest.getTestAccountFrId(testAccount));
         } else {
             Contact testSupporter = frDonorTest.getTestContact();
             request.put('supporterId', testSupporter.fr_ID__c);
@@ -92,7 +92,7 @@ public class frPledgeTest {
 
         if (frUtil.hasNPCobjects()) {
             Account testAccount = frDonorTest.getTestAccount(true);
-            request.put('supporterId', testAccount.fr_ID__c);
+            request.put('supporterId', frDonorTest.getTestAccountFrId(testAccount));
         } else {
             Contact testSupporter = frDonorTest.getTestContact();
             request.put('supporterId', testSupporter.fr_ID__c);

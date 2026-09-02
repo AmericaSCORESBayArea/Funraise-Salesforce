@@ -109,6 +109,14 @@
         <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
+        <apexClass>frSupporterResolver</apexClass>
+        <enabled>true</enabled>
+    </classAccesses>
+    <classAccesses>
+        <apexClass>frSupporterResolverTest</apexClass>
+        <enabled>true</enabled>
+    </classAccesses>
+    <classAccesses>
         <apexClass>frTestUtil</apexClass>
         <enabled>true</enabled>
     </classAccesses>
@@ -165,11 +173,6 @@
         <enabled>true</enabled>
     </classAccesses>
     <description>Permission set for new funraise apex classes</description>
-    <fieldPermissions>
-        <editable>false</editable>
-        <field>Account.fr_ID__c</field>
-        <readable>false</readable>
-    </fieldPermissions>
     <fieldPermissions>
         <editable>true</editable>
         <field>Answer__c.Answer__c</field>
@@ -596,6 +599,21 @@
         <readable>true</readable>
     </fieldPermissions>
     <fieldPermissions>
+        <editable>true</editable>
+        <field>frSupporter_Identity__c.Email__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>true</editable>
+        <field>frSupporter_Identity__c.Funraise_Supporter_ID__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>true</editable>
+        <field>frSupporter_Identity__c.Supporter__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
         <editable>false</editable>
         <field>Task.fr_Task_ID__c</field>
         <readable>false</readable>
@@ -681,6 +699,15 @@
         <allowRead>true</allowRead>
         <modifyAllRecords>false</modifyAllRecords>
         <object>Sync_Attempt__c</object>
+        <viewAllRecords>false</viewAllRecords>
+    </objectPermissions>
+    <objectPermissions>
+        <allowCreate>true</allowCreate>
+        <allowDelete>false</allowDelete>
+        <allowEdit>true</allowEdit>
+        <allowRead>true</allowRead>
+        <modifyAllRecords>false</modifyAllRecords>
+        <object>frSupporter_Identity__c</object>
         <viewAllRecords>false</viewAllRecords>
     </objectPermissions>
     <tabSettings>

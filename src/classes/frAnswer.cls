@@ -80,14 +80,20 @@ public class frAnswer extends frModel implements frSyncable {
         SObject supporter = null;
         String funraiseSupporterId = String.valueOf(request.get('supporterId'));
         if(String.isNotBlank(funraiseSupporterId)) {
-            List<SObject> supporters;
-            if(frUtil.hasNPCobjects()) supporters = Database.query('SELECT Id FROM Account WHERE fr_ID__c = :funraiseSupporterId');
-            else supporters = [SELECT Id, AccountId FROM Contact WHERE fr_ID__c = :funraiseSupporterId];
-            if(supporters.isEmpty()) {
-                if(createLogRecord) frUtil.logRelationshipError(getFrType(), funraiseId, 
-                                            frUtil.Entity.SUPPORTER, funraiseSupporterId);
+            if(frUtil.hasNPCobjects()) {
+                supporter = frSupporterResolver.resolveAccount(funraiseSupporterId);
             } else {
-                supporter = supporters.get(0);
+                List<Contact> supporters = [
+                    SELECT Id, AccountId FROM Contact WHERE fr_ID__c = :funraiseSupporterId
+                ];
+                supporter = supporters.isEmpty() ? null : supporters.get(0);
+            }
+            if(supporter == null) {
+                if(createLogRecord) {
+                    frUtil.logRelationshipError(
+                        getFrType(), funraiseId, frUtil.Entity.SUPPORTER, funraiseSupporterId
+                    );
+                }
             }
         }
         

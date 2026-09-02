@@ -82,14 +82,22 @@ public class frSubscription extends frModel implements frSyncable {
         String goalId = String.valueOf(request.get('campaignGoalId'));
         String strPledgeAmount = String.valueOf(request.get('pledgeAmount'));
         Decimal pledgeAmount = String.isNotBlank(strPledgeAmount) ? Decimal.valueOf(strPledgeAmount) : null;
-        List<Contact> contacts = [SELECT Id from Contact WHERE fr_Id__c = :funraiseSupporterId];
-        List<Account> accounts = new List<Account>();
+        Id supporterId = null;
         if (frUtil.hasNPCobjects()) {
-            accounts = Database.query('SELECT Id, PersonContactId FROM Account WHERE fr_ID__c = :funraiseSupporterId');
+            Account supporter = frSupporterResolver.resolveAccount(funraiseSupporterId);
+            if(supporter != null) {
+                supporterId = supporter.Id;
+            }
+        } else {
+            List<Contact> contacts = [SELECT Id from Contact WHERE fr_Id__c = :funraiseSupporterId];
+            supporterId = contacts.isEmpty() ? null : contacts.get(0).Id;
         }
-        if(contacts.isEmpty() && accounts.isEmpty()) {
-            if(createLogRecord) frUtil.logRelationshipError(getFrType(), funraiseId, 
-                                        frUtil.Entity.SUPPORTER, funraiseSupporterId);
+        if(supporterId == null) {
+            if(createLogRecord) {
+                frUtil.logRelationshipError(
+                    getFrType(), funraiseId, frUtil.Entity.SUPPORTER, funraiseSupporterId
+                );
+            }
             return result;
         }
         Subscription__c subscription;
@@ -107,7 +115,7 @@ public class frSubscription extends frModel implements frSyncable {
                 Schema.getGlobalDescribe().get('GiftCommitment').getDescribe().fields.getMap().get('Name').getDescribe(), 
                 String.valueOf(request.get('name'))
             ));
-            gc.put('DonorId', accounts.get(0).Id);
+            gc.put('DonorId', supporterId);
 
             // campaign check for gc
             if (String.isNotBlank(goalId)) {
@@ -133,20 +141,14 @@ public class frSubscription extends frModel implements frSyncable {
                 frPledge.create(gc, pledgeAmount);
             }
             return result;
-        } 
-        else if(contacts.isEmpty()) {
-            if(createLogRecord) frUtil.logRelationshipError(getFrType(), funraiseId, 
-                                        frUtil.Entity.SUPPORTER, funraiseSupporterId);
-            return result;
-        }
-        else {
+        } else {
             subscription = new Subscription__c(
                 fr_ID__c = funraiseId,
                 Name = frUtil.truncateToFieldLength(
                     Subscription__c.Name.getDescribe(), 
                     String.valueOf(request.get('name'))
                 ), 
-                Supporter__c = contacts.get(0).Id
+                Supporter__c = supporterId
             );
         }
 

@@ -101,7 +101,7 @@ public class frAnswerTest {
         request.put('id', funraiseId);
         request.put('questionId', question.fr_Id__c);
         request.put('donationId', gt.get('fr_Id__c'));
-        request.put('supporterId', supporter.fr_Id__c);
+        request.put('supporterId', frDonorTest.getTestAccountFrId(supporter));
 
         frTestUtil.createTestPost(request);
 

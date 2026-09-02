@@ -86,11 +86,16 @@ public class frDonation extends frModel implements frSyncable {
         
         //connect supporter
         if (String.isNotBlank(supporterFunraiseId)) {
-            List<SObject> supporters;
-            if(frUtil.hasNPCobjects()) supporters = Database.query('SELECT Id FROM ' + SUPPORTER_OBJ_NAME + ' WHERE fr_ID__c = :supporterFunraiseId');
-            else supporters = [SELECT Id, AccountId FROM Contact WHERE fr_ID__c = :supporterFunraiseId];
-            if (supporters.size() > 0) {
-                SObject supporter = supporters.get(0);
+            SObject supporter = null;
+            if(frUtil.hasNPCobjects()) {
+                supporter = frSupporterResolver.resolveAccount(supporterFunraiseId);
+            } else {
+                List<Contact> supporters = [
+                    SELECT Id, AccountId FROM Contact WHERE fr_ID__c = :supporterFunraiseId
+                ];
+                supporter = supporters.isEmpty() ? null : supporters.get(0);
+            }
+            if (supporter != null) {
                 if(!frUtil.hasNPCobjects()) o.put('fr_Donor__c', supporter.get('Id'));
                 else o.put('DonorId', supporter.get('Id'));
                 if(frUtil.hasNPSP()){

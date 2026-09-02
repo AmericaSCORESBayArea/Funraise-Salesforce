@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomObject xmlns="http://soap.sforce.com/2006/04/metadata">
+    <deploymentStatus>Deployed</deploymentStatus>
+    <enableActivities>false</enableActivities>
+    <enableBulkApi>true</enableBulkApi>
+    <enableFeeds>false</enableFeeds>
+    <enableHistory>true</enableHistory>
+    <enableReports>true</enableReports>
+    <enableSearch>true</enableSearch>
+    <enableSharing>true</enableSharing>
+    <fields>
+        <fullName>Email__c</fullName>
+        <externalId>false</externalId>
+        <label>Email</label>
+        <required>false</required>
+        <trackHistory>true</trackHistory>
+        <type>Email</type>
+        <unique>false</unique>
+    </fields>
+    <fields>
+        <fullName>Funraise_Supporter_ID__c</fullName>
+        <caseSensitive>false</caseSensitive>
+        <externalId>true</externalId>
+        <label>Funraise Supporter ID</label>
+        <length>255</length>
+        <required>true</required>
+        <trackHistory>true</trackHistory>
+        <type>Text</type>
+        <unique>true</unique>
+    </fields>
+    <fields>
+        <fullName>Supporter__c</fullName>
+        <deleteConstraint>Restrict</deleteConstraint>
+        <label>Person Account</label>
+        <referenceTo>Account</referenceTo>
+        <relationshipLabel>Funraise Supporter Identities</relationshipLabel>
+        <relationshipName>Funraise_Supporter_Identities</relationshipName>
+        <required>true</required>
+        <trackHistory>true</trackHistory>
+        <type>Lookup</type>
+    </fields>
+    <label>Funraise Supporter Identity</label>
+    <nameField>
+        <displayFormat>FRI-{0000000}</displayFormat>
+        <label>Funraise Supporter Identity</label>
+        <type>AutoNumber</type>
+    </nameField>
+    <pluralLabel>Funraise Supporter Identities</pluralLabel>
+    <sharingModel>ReadWrite</sharingModel>
+    <visibility>Public</visibility>
+</CustomObject>

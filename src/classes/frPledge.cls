@@ -98,16 +98,16 @@ public class frPledge extends frModel implements frSyncable {
         SObject supporter = null;
         String funraiseSupporterId = String.valueOf(request.get('supporterId'));
         if(String.isNotBlank(funraiseSupporterId)) {
-            List<SObject> supporters;
             if (frUtil.hasNPCobjects()) {
-                supporters = [SELECT Id FROM Account WHERE fr_Id__c = :funraiseSupporterId];
+                supporter = frSupporterResolver.resolveAccount(funraiseSupporterId);
             } else {
-                supporters = [SELECT Id, AccountId FROM Contact WHERE fr_Id__c = :funraiseSupporterId];
+                List<Contact> supporters = [
+                    SELECT Id, AccountId FROM Contact WHERE fr_Id__c = :funraiseSupporterId
+                ];
+                supporter = supporters.isEmpty() ? null : supporters.get(0);
             }
-            if(supporters.isEmpty() && createLogRecord) {
+            if(supporter == null && createLogRecord) {
                 frUtil.logRelationshipError(getFrType(), commitmentId, frUtil.Entity.SUPPORTER, funraiseSupporterId);
-            } else if (!supporters.isEmpty()) {
-                supporter = supporters.get(0);
             }
         }
 
