@@ -113,7 +113,8 @@ public with sharing abstract class frModel {
         String funraiseId = getFunraiseId();
         String salesforceId = getSalesforceId();
         SObject queriedFieldsRecord = null;
-        if(!fieldsToQueryFor.isEmpty()) {
+        Boolean canUseFunraiseId = sObjectName != 'Account' && fields.containsKey('fr_ID__c');
+        if(!fieldsToQueryFor.isEmpty() && (String.isNotBlank(salesforceId) || canUseFunraiseId)) {
             String query = 'SELECT ' + String.join(new List<String>(fieldsToQueryFor), ',') 
                 + ' FROM ' + sObjectName + ' WHERE ';
             if(getSalesforceId() != null) {
@@ -151,7 +152,9 @@ public with sharing abstract class frModel {
             if(write) {
                 write(record, field, constantMapping.sf_Name__c, constantMapping.Constant_Value__c, funraiseId);
             }        }
-        record.put('fr_ID__c', funraiseId);
+        if(canUseFunraiseId) {
+            record.put('fr_ID__c', funraiseId);
+        }
     }
     
     private static Boolean shouldWriteMapping(frMapping__c mapping, Object incomingValue, SObject queriedFieldsRecord, Boolean isMoreRecent, Schema.SObjectField field, String sObjectName) {

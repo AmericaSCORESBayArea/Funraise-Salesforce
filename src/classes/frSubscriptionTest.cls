@@ -114,7 +114,7 @@ public class frSubscriptionTest {
         request.put('supporterId', testSupporter.fr_ID__c);
         request.put('id', funraiseId);
 
-        if(frUtil.hasNPCobjects()) request.put('supporterId', testAccount.fr_ID__c);
+        if(frUtil.hasNPCobjects()) request.put('supporterId', frDonorTest.getTestAccountFrId(testAccount));
 
         frTestUtil.createTestPost(request);
         
@@ -177,7 +177,7 @@ public class frSubscriptionTest {
         Map<String, Object> request = getTestRequest();
         request.put('id', funraiseId);
         request.put('campaignGoalId', testCampaign.fr_ID__c);
-        request.put('supporterId', testAccount.fr_ID__c);
+        request.put('supporterId', frDonorTest.getTestAccountFrId(testAccount));
         frTestUtil.createTestPost(request);
 
         Test.startTest();
@@ -221,12 +221,10 @@ public class frSubscriptionTest {
         }
         Contact testSupporter = frDonorTest.getTestContact();
         Account testAccount = frDonorTest.getTestAccount(true);
-        testAccount.put('fr_ID__c', '123456');
-        update testAccount;
 
         String funraiseId = '25';
         Map<String, Object> request = getTestRequest();
-        request.put('supporterId', testAccount.fr_ID__c + '1');
+        request.put('supporterId', 'missing-supporter-id');
         request.put('id', funraiseId);
 
         frTestUtil.createTestPost(request);
@@ -284,7 +282,7 @@ public class frSubscriptionTest {
         request.put('supporterId', testSupporter.fr_ID__c);
         request.put('id', funraiseId);
         request.put('campaignGoalId', testCampaign.fr_ID__c+'1');
-        if(frUtil.hasNPCobjects()) request.put('supporterId', testAccount.fr_ID__c);
+        if(frUtil.hasNPCobjects()) request.put('supporterId', frDonorTest.getTestAccountFrId(testAccount));
 
         frTestUtil.createTestPost(request);
         
@@ -332,8 +330,6 @@ public class frSubscriptionTest {
         }
         Contact testSupporter = frDonorTest.getTestContact();
         Account testAccount = frDonorTest.getTestAccount(true);
-        testAccount.put('fr_ID__c', '123456');
-        update testAccount;
 
         SObject matchingNPCRecord = Schema.getGlobalDescribe().get('giftcommitment').newSObject();
         matchingNPCRecord.put('fr_ID__c', '25');
@@ -343,7 +339,7 @@ public class frSubscriptionTest {
 
         String funraiseId = '25';
         Map<String, Object> request = getTestRequest();
-        request.put('supporterId', testAccount.fr_ID__c);
+        request.put('supporterId', frDonorTest.getTestAccountFrId(testAccount));
         request.put('id', funraiseId);
         request.put('deleted', true);
 
@@ -403,7 +399,7 @@ public class frSubscriptionTest {
         request.put('supporterId', testSupporter.fr_ID__c);
         request.put('id', funraiseId);
         request.put('campaignGoalId', testCampaign.fr_ID__c);
-        if(frUtil.hasNPCobjects()) request.put('supporterId', testAccount.fr_ID__c);
+        if(frUtil.hasNPCobjects()) request.put('supporterId', frDonorTest.getTestAccountFrId(testAccount));
         frTestUtil.createTestPost(request);
 
         Test.startTest();

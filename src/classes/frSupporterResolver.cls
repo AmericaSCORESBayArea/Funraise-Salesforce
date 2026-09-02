@@ -28,27 +28,7 @@ public with sharing class frSupporterResolver {
             email,
             sourceType,
             sourceId,
-            createLogRecord,
-            true
-        );
-    }
-
-    public static Boolean ensureIdentity(
-        Account supporter,
-        String funraiseSupporterId,
-        String email,
-        frUtil.Entity sourceType,
-        String sourceId,
-        Boolean createLogRecord
-    ) {
-        return saveIdentity(
-            supporter,
-            funraiseSupporterId,
-            email,
-            sourceType,
-            sourceId,
-            createLogRecord,
-            false
+            createLogRecord
         );
     }
 
@@ -58,8 +38,7 @@ public with sharing class frSupporterResolver {
         String email,
         frUtil.Entity sourceType,
         String sourceId,
-        Boolean createLogRecord,
-        Boolean overwriteEmail
+        Boolean createLogRecord
     ) {
         if(supporter == null || supporter.Id == null || String.isBlank(funraiseSupporterId)) {
             return false;
@@ -87,7 +66,7 @@ public with sharing class frSupporterResolver {
             ? new Supporter_Identity__c(Funraise_Supporter_ID__c = funraiseSupporterId)
             : identities.get(0);
         identity.Supporter__c = supporter.Id;
-        if(String.isNotBlank(email) && (overwriteEmail || String.isBlank(identity.Email__c))) {
+        if(String.isNotBlank(email)) {
             identity.Email__c = email;
         }
 

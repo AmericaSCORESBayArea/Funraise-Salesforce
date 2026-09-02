@@ -9,6 +9,11 @@ private class frSupporterResolverTest {
         Account supporter = frDonorTest.getTestAccount(false);
         supporter.put('PersonEmail', 'previous@example.com');
         insert supporter;
+        insert new Supporter_Identity__c(
+            Funraise_Supporter_ID__c = '856',
+            Email__c = 'previous@example.com',
+            Supporter__c = supporter.Id
+        );
 
         insert frSetupController.getPersonAccountDefaults();
 
@@ -29,16 +34,6 @@ private class frSupporterResolverTest {
         frTestUtil.createTestPost(aliasRequest);
         frWSDonorController.syncEntity();
 
-        Account persistedSupporter = [
-            SELECT Id, fr_ID__c
-            FROM Account
-            WHERE Id = :supporter.Id
-        ];
-        System.assertEquals(
-            aliasId,
-            persistedSupporter.fr_ID__c,
-            'The Account ID should advance to the latest synced supporter identity'
-        );
         System.assertEquals(
             1,
             [SELECT COUNT() FROM Account],
@@ -77,35 +72,29 @@ private class frSupporterResolverTest {
     }
 
     @isTest
-    static void accountFieldDoesNotParticipateInResolution() {
+    static void identityRowIsRequiredForResolution() {
         if(!frUtil.hasNPCobjects()) {
             return;
         }
 
-        Account directMatch = frDonorTest.getTestAccount(false);
-        directMatch.fr_ID__c = 'conflicting-id';
-        insert directMatch;
+        Account supporter = frDonorTest.getTestAccount(false);
+        insert supporter;
 
         System.assertEquals(
             null,
             frSupporterResolver.resolveAccount('conflicting-id'),
-            'An Account external ID without an identity row must not resolve'
+            'An Account without an identity row must not resolve'
         );
-
-        Account aliased = frDonorTest.getTestAccount(false);
-        aliased.fr_ID__c = 'other-canonical-id';
-        aliased.put('LastName', 'Different');
-        insert aliased;
 
         insert new Supporter_Identity__c(
             Funraise_Supporter_ID__c = 'conflicting-id',
-            Supporter__c = aliased.Id
+            Supporter__c = supporter.Id
         );
 
         System.assertEquals(
-            aliased.Id,
+            supporter.Id,
             frSupporterResolver.resolveAccount('conflicting-id').Id,
-            'The identity row must be authoritative even when an Account has the same external ID'
+            'The identity row must be authoritative'
         );
     }
 

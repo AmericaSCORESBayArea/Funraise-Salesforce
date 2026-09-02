@@ -175,11 +175,6 @@
     <description>Permission set for new funraise apex classes</description>
     <fieldPermissions>
         <editable>true</editable>
-        <field>Account.fr_ID__c</field>
-        <readable>true</readable>
-    </fieldPermissions>
-    <fieldPermissions>
-        <editable>true</editable>
         <field>Answer__c.Answer__c</field>
         <readable>true</readable>
     </fieldPermissions>

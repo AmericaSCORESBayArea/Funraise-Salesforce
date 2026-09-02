@@ -86,10 +86,10 @@ public class frDonorTest {
         Test.stopTest();
 
         String frId = String.valueOf(getTestRequest().get('id'));
-        // Now using a database.query() for the count approach
-        String soql = 'SELECT Id FROM Account WHERE fr_Id__c = \'' + frId + '\'';
-        List<Account> accList = Database.query(soql);
-        System.assertEquals(1, accList.size());
+        System.assertEquals(1, [
+            SELECT COUNT() FROM Supporter_Identity__c
+            WHERE Funraise_Supporter_ID__c = :frId
+        ]);
     }
 
     //
@@ -145,9 +145,8 @@ public class frDonorTest {
         Test.stopTest();
 
         String frId = String.valueOf(getTestRequest().get('id'));
-        String soql = 'SELECT Id, fr_ID__c, LastName FROM Account WHERE fr_Id__c = \'' + frId + '\'';
-        List<SObject> result = Database.query(soql);
-        System.assertEquals(String.valueOf(request.get('institutionName')), (String)result[0].get('LastName'));
+        Account result = getTestAccountByFrId(frId);
+        System.assertEquals(String.valueOf(request.get('institutionName')), result.LastName);
     }
 
     //
@@ -210,9 +209,8 @@ public class frDonorTest {
         Test.stopTest();
 
         String frId = existingSupporter.fr_Id__c;
-        String soql = 'SELECT Id, fr_ID__c, LastName FROM Account WHERE fr_Id__c = \'' + frId + '\'';
-        List<SObject> result = Database.query(soql);
-        System.assertEquals(String.valueOf(request.get('institutionName')), (String)result[0].get('LastName'));
+        Account result = getTestAccountByFrId(frId);
+        System.assertEquals(String.valueOf(request.get('institutionName')), result.LastName);
     }
 
     //
@@ -262,17 +260,16 @@ public class frDonorTest {
         createMapping('postalCode', 'MailingPostalCode');
         createMapping('country', 'MailingCountry');
 
-        // For NPC: insert "existingacc" as a dynamic approach
         SObject existingacc = Schema.getGlobalDescribe().get('account').newSObject();
-        existingacc.put('fr_ID__c', '856');
         existingacc.put('LastName', 'Test');
         existingacc.put('FirstName', 'Existing');
 
         SObject noMatchacc = Schema.getGlobalDescribe().get('account').newSObject();
-        noMatchacc.put('fr_ID__c', '111');
         noMatchacc.put('LastName', 'nomatch');
         noMatchacc.put('FirstName', 'nomatch');
         insert new List<SObject>{existingacc, noMatchacc};
+        createTestIdentity((Account) existingacc, '856');
+        createTestIdentity((Account) noMatchacc, '111');
 
         Integer countBeforeSync = [SELECT COUNT() FROM Account];
 
@@ -282,10 +279,7 @@ public class frDonorTest {
         Test.stopTest();
 
         String frId = String.valueOf(getTestRequest().get('id'));
-        // Instead of [SELECT COUNT() FROM Account WHERE fr_Id__c = :frId], do a database.query
-        String soql = 'SELECT Id FROM Account WHERE fr_Id__c = \'' + frId + '\'';
-        List<Account> result = Database.query(soql);
-        System.assertEquals(1, result.size());
+        System.assertEquals(existingacc.Id, getTestAccountByFrId(frId).Id);
 
         Integer countAfterSync = [SELECT COUNT() FROM Account];
         System.assertEquals(countBeforeSync, countAfterSync);
@@ -382,7 +376,6 @@ public class frDonorTest {
         String emailField = getAccountEmailField();
 
         SObject existingacc = Schema.getGlobalDescribe().get('account').newSObject();
-        existingacc.put('fr_ID__c', '856');
         existingacc.put('LastName', 'Test');
         existingacc.put('FirstName', 'Existing');
         if (emailField != null) {
@@ -390,11 +383,10 @@ public class frDonorTest {
         }
 
         SObject noMatchacc = Schema.getGlobalDescribe().get('account').newSObject();
-        noMatchacc.put('fr_ID__c', '111');
         noMatchacc.put('LastName', 'nomatch');
         noMatchacc.put('FirstName', 'nomatch');
         if (emailField != null) {
-            noMatchacc.put(emailField, 'alextest02221503@example.com');
+            noMatchacc.put(emailField, 'nomatch@example.com');
         }
 
         insert new List<SObject>{existingacc, noMatchacc};
@@ -408,9 +400,7 @@ public class frDonorTest {
         frTestUtil.assertNoErrors();
         
         String frId = String.valueOf(getTestRequest().get('id'));
-        String soql = 'SELECT Id, fr_ID__c FROM Account WHERE fr_Id__c = \'' + frId + '\'';
-        List<SObject> accs = Database.query(soql);
-        System.assertEquals(1, accs.size());
+        System.assertEquals(existingacc.Id, getTestAccountByFrId(frId).Id);
 
         Integer countAfterSync = [SELECT COUNT() FROM Account];
         System.assertEquals(countBeforeSync, countAfterSync);
@@ -470,7 +460,6 @@ public class frDonorTest {
         createMapping('country', 'MailingCountry');
 
         SObject existingacc = Schema.getGlobalDescribe().get('account').newSObject();
-        existingacc.put('fr_ID__c', '856');
         existingacc.put('LastName', 'test02221503');
         existingacc.put('FirstName', 'alex');
         existingacc.put('PersonMailingStreet', '1234 S Street st');
@@ -480,7 +469,6 @@ public class frDonorTest {
         existingacc.put('PersonMailingCountry', 'United States');
 
         SObject noMatchacc = Schema.getGlobalDescribe().get('account').newSObject();
-        noMatchacc.put('fr_ID__c', '111');
         noMatchacc.put('LastName', 'nomatch');
         noMatchacc.put('FirstName', 'nomatch');
         insert new List<SObject>{existingacc, noMatchacc};
@@ -492,9 +480,7 @@ public class frDonorTest {
         Test.stopTest();
 
         String frId = String.valueOf(getTestRequest().get('id'));
-        String soql = 'SELECT Id FROM Account WHERE fr_Id__c = \'' + frId + '\'';
-        List<Account> accs = Database.query(soql);
-        System.assertEquals(1, accs.size());
+        System.assertEquals(existingacc.Id, getTestAccountByFrId(frId).Id);
         Integer countAfterSync = [SELECT COUNT() FROM Account];
         System.assertEquals(countBeforeSync, countAfterSync);
     }
@@ -557,9 +543,10 @@ public class frDonorTest {
         Test.stopTest();
 
         String frId = String.valueOf(getTestRequest().get('id'));
-        String soql = 'SELECT Id FROM Account WHERE fr_Id__c = \'' + frId + '\'';
-        List<SObject> results = Database.query(soql);
-        System.assertEquals(1, results.size());
+        System.assertEquals(1, [
+            SELECT COUNT() FROM Supporter_Identity__c
+            WHERE Funraise_Supporter_ID__c = :frId
+        ]);
     }
 
     //
@@ -619,11 +606,9 @@ public class frDonorTest {
         Test.stopTest();
         frTestUtil.assertNoErrors();
         
-        String existingAccFrId = existingacc.fr_Id__c;
-        String soql = 'SELECT Id, fr_ID__c, PersonEmail FROM Account WHERE fr_Id__c = \'' + existingAccFrId + '\'';
-        List<SObject> results = Database.query(soql);
-        System.assertEquals(existingacc.Id, results[0].Id);
-        System.assertEquals(existingacc.get('PersonEmail'), results[0].get('PersonEmail'));
+        Account result = [SELECT Id, PersonEmail FROM Account WHERE Id = :existingacc.Id];
+        System.assertEquals(existingacc.Id, result.Id);
+        System.assertEquals(existingacc.get('PersonEmail'), result.PersonEmail);
     }
 
     //
@@ -684,7 +669,7 @@ public class frDonorTest {
         Contact existing = getTestContact(true);
         Account existingacc = getTestAccount(true);
         Map<String, Object> request = getTestRequest();
-        request.put('id', existing.fr_Id__c);
+        request.put('id', getTestAccountFrId(existingacc));
         request.put('email', 'example.email.overwrite@example.com');
         request.put('country', null);
 
@@ -694,12 +679,12 @@ public class frDonorTest {
         Test.stopTest();
         frTestUtil.assertNoErrors();
 
-        String accFrId = existingacc.fr_Id__c;
-        String soql = 'SELECT Id, PersonEmail, PersonMailingCountry FROM Account WHERE fr_Id__c = \'' + accFrId + '\'';
-        List<SObject> results = Database.query(soql);
-        System.assertEquals(existingacc.Id, results[0].get('Id'));
-        System.assertEquals(existingacc.get('PersonEmail'), results[0].get('PersonEmail'));
-        System.assertEquals(existingacc.get('PersonMailingCountry'), results[0].get('PersonMailingCountry'));
+        Account result = [
+            SELECT Id, PersonEmail, PersonMailingCountry FROM Account WHERE Id = :existingacc.Id
+        ];
+        System.assertEquals(existingacc.Id, result.Id);
+        System.assertEquals(existingacc.get('PersonEmail'), result.PersonEmail);
+        System.assertEquals(existingacc.get('PersonMailingCountry'), result.PersonMailingCountry);
     }
 
     //
@@ -754,7 +739,7 @@ public class frDonorTest {
         existingacc.put('personemail' ,'example.email.no.overwrite@example.com');
         update existingacc;        
         Map<String, Object> request = getTestRequest();
-        request.put('id', existingacc.fr_Id__c);
+        request.put('id', getTestAccountFrId(existingacc));
         request.put('email', 'example.email.overwrite@example.com');
         request.put('updtime', DateTime.now().addDays(1).getTime());
 
@@ -764,9 +749,8 @@ public class frDonorTest {
         Test.stopTest();
         frTestUtil.assertNoErrors();
 
-        String soql = 'SELECT Id, PersonEmail FROM Account WHERE fr_Id__c = \'' + existingacc.fr_Id__c + '\'';
-        List<SObject> results = Database.query(soql);
-        System.assertEquals('example.email.overwrite@example.com', (String)results[0].get('PersonEmail'));
+        Account result = [SELECT Id, PersonEmail FROM Account WHERE Id = :existingacc.Id];
+        System.assertEquals('example.email.overwrite@example.com', result.PersonEmail);
     }
 
     //
@@ -819,7 +803,7 @@ public class frDonorTest {
         Contact existing = getTestContact(true);
         Account existingacc = getTestAccount(true);
         Map<String, Object> request = getTestRequest();
-        request.put('id', existing.fr_Id__c);
+        request.put('id', getTestAccountFrId(existingacc));
         request.put('email', 'example.email.overwrite@example.com');
         request.put('updtime', DateTime.now().addDays(-50).getTime());
 
@@ -829,9 +813,8 @@ public class frDonorTest {
         Test.stopTest();
         frTestUtil.assertNoErrors();
 
-        String soql = 'SELECT Id, PersonEmail FROM Account WHERE fr_Id__c = \'' + existingacc.fr_Id__c + '\'';
-        List<SObject> results = Database.query(soql);
-        System.assertEquals(existingacc.get('PersonEmail'), results[0].get('PersonEmail'));
+        Account result = [SELECT Id, PersonEmail FROM Account WHERE Id = :existingacc.Id];
+        System.assertEquals(existingacc.get('PersonEmail'), result.PersonEmail);
     }
 
     //
@@ -886,15 +869,16 @@ public class frDonorTest {
         
         String frId = String.valueOf(getTestRequest().get('id'));
         String emailField = getAccountEmailField();
-        String soql = 'SELECT Id, fr_ID__c';
+        String soql = 'SELECT Supporter__r.Id';
         if (emailField != null) {
-            soql += ', ' + emailField;
+            soql += ', Supporter__r.' + emailField;
         }
-        soql += ' FROM Account WHERE fr_Id__c = \'' + frId + '\'';
+        soql += ' FROM Supporter_Identity__c WHERE Funraise_Supporter_ID__c = :frId';
 
         List<SObject> results = Database.query(soql);
         if (!results.isEmpty() && emailField != null) {
-            System.assertEquals(getTestRequest().get('email'), (String)results[0].get(emailField));
+            SObject supporter = results[0].getSObject('Supporter__r');
+            System.assertEquals(getTestRequest().get('email'), (String)supporter.get(emailField));
         }
     }
 
@@ -954,19 +938,47 @@ public class frDonorTest {
         else {
             account.put('Name', 'Wayne Enterprises');
         }
-        account.put('fr_ID__c', '856');
         if(save) {
             insert account;
             if (frUtil.hasNPCobjects()) {
+                createTestIdentity(account, '856');
                 Id accountId = account.Id;
                 account = (Account) Database.query(
-                    'SELECT Id, FirstName, LastNAme, PersonEmail, PersonMailingStreet, PersonMailingCity, PersonMailingState, PersonMailingPostalCode, PersonMailingCountry, PersonContactId, fr_ID__c '+
+                    'SELECT Id, FirstName, LastNAme, PersonEmail, PersonMailingStreet, PersonMailingCity, PersonMailingState, PersonMailingPostalCode, PersonMailingCountry, PersonContactId '+
                     'FROM Account '+
                     'WHERE Id = :accountId'
                 ).get(0);
             }
         }
         return account;
+    }
+
+    public static void createTestIdentity(Account account, String funraiseId) {
+        insert new Supporter_Identity__c(
+            Funraise_Supporter_ID__c = funraiseId,
+            Supporter__c = account.Id
+        );
+    }
+
+    public static String getTestAccountFrId(Account account) {
+        Id accountId = account.Id;
+        return [
+            SELECT Funraise_Supporter_ID__c
+            FROM Supporter_Identity__c
+            WHERE Supporter__c = :accountId
+            ORDER BY CreatedDate
+            LIMIT 1
+        ].Funraise_Supporter_ID__c;
+    }
+
+    public static Account getTestAccountByFrId(String funraiseId) {
+        return [
+            SELECT Supporter__r.Id, Supporter__r.LastName, Supporter__r.PersonEmail,
+                   Supporter__r.PersonMailingCountry
+            FROM Supporter_Identity__c
+            WHERE Funraise_Supporter_ID__c = :funraiseId
+            LIMIT 1
+        ].Supporter__r;
     }
     
     public static Contact getTestContact() {

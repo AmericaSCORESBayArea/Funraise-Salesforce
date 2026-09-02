@@ -776,7 +776,7 @@ public class frDonationTest {
 
         Map<String, Object> request = getTestRequest();
         request.put('id', existingGT.get('fr_Id__c'));
-        request.put('donorId', testAccount.get('fr_Id__c'));
+        request.put('donorId', frDonorTest.getTestAccountFrId(testAccount));
         frTestUtil.createTestPost(request);
 
         Test.startTest();
@@ -845,7 +845,7 @@ public class frDonationTest {
         
         Map<String, Object> req = getTestRequest();
         req.put('donation_cretime', DateTime.now().addDays(-3).getTime());
-        req.put('donorId', testAccount.get('fr_Id__c'));
+        req.put('donorId', frDonorTest.getTestAccountFrId(testAccount));
         frTestUtil.createTestPost(req);
         
         Test.startTest();

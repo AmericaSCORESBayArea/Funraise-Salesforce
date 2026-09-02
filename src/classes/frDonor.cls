@@ -69,6 +69,7 @@ public class frDonor extends frModel implements frSyncable{
     
         supporter = null; // Generic SObject for both Account and Contact
         Boolean isNPC = frUtil.hasNPCobjects();
+        String supporterFields = isNPC ? 'Id, LastName' : 'Id, fr_ID__c, LastName';
     
         List<SObject> records = new List<SObject>();
         if(isNPC) {
@@ -91,7 +92,7 @@ public class frDonor extends frModel implements frSyncable{
     
         // Match based on email and names
         if (supporter == null && String.isNotBlank(email)) {
-            String query = 'SELECT Id, fr_ID__c, LastName FROM ' + SOBJ_NAME + ' WHERE ' + emailField + ' = :email';
+            String query = 'SELECT ' + supporterFields + ' FROM ' + SOBJ_NAME + ' WHERE ' + emailField + ' = :email';
             
             if (String.isNotBlank(firstName) && String.isNotBlank(lastName)) {
                 query += ' AND FirstName = :firstName AND LastName = :lastName';
@@ -110,7 +111,7 @@ public class frDonor extends frModel implements frSyncable{
         }
         //match on just email
         if (supporter == null && String.isNotBlank(email)) {
-            String query = 'SELECT Id, fr_ID__c, LastName FROM ' + SOBJ_NAME + ' WHERE ' + emailField + ' = :email';
+            String query = 'SELECT ' + supporterFields + ' FROM ' + SOBJ_NAME + ' WHERE ' + emailField + ' = :email';
     
             query += ' ORDER BY CreatedDate DESC LIMIT 2';
     
@@ -140,7 +141,7 @@ public class frDonor extends frModel implements frSyncable{
             String mailingPostalCodeField = isNPC ? 'PersonMailingPostalCode' : 'MailingPostalCode';
     
             if (namePresent && String.isNotBlank(address1) && (cityAndState || String.isNotBlank(postalCode))) {
-                String byAddress = 'SELECT Id, fr_ID__c, LastName FROM ' + SOBJ_NAME + 
+                String byAddress = 'SELECT ' + supporterFields + ' FROM ' + SOBJ_NAME +
                     ' WHERE ' + mailingStreetField + ' = :address1 AND FirstName = :firstName AND LastName = :lastName';
     
                 if (cityAndState) {
@@ -164,39 +165,13 @@ public class frDonor extends frModel implements frSyncable{
         // If no match, create a new record
         if (supporter == null) {
             if(isNPC) {
-                supporter = new Account(fr_Id__c = frId);
+                supporter = new Account();
             } 
             else {
                 supporter = new Contact(fr_Id__c = frId);
             }
         }
     
-        String previousFrId = null;
-        String previousEmail = null;
-        if(isNPC && supporter.Id != null) {
-            Id supporterId = supporter.Id;
-            List<SObject> persistedAccounts = Database.query(
-                'SELECT fr_ID__c, PersonEmail FROM Account WHERE Id = :supporterId'
-            );
-            if(!persistedAccounts.isEmpty()) {
-                previousFrId = (String) persistedAccounts.get(0).get('fr_ID__c');
-                previousEmail = (String) persistedAccounts.get(0).get('PersonEmail');
-            }
-            if(String.isNotBlank(previousFrId) &&
-               !frSupporterResolver.ensureIdentity(
-                   (Account) supporter,
-                   previousFrId,
-                   previousEmail,
-                   getFrType(),
-                   frId,
-                   createLogRecord
-               )) {
-                return false;
-            }
-        }
-
-        // frModel advances Account.fr_ID__c to the incoming supporter ID. The
-        // previous ID and email have already been retained as an identity.
         applyMappings(supporter, request);
     
         if (String.isBlank((String)supporter.get('LastName'))) {

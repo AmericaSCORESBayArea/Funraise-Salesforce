@@ -10,9 +10,8 @@ CLI. Do not point it at a production Salesforce or Funraise environment.
 
 Two Funraise supporter IDs may identify one Salesforce Person Account:
 
-- `Account.fr_ID__c` may track the last successfully processed donor ID for
-  compatibility, but it does not participate in NPC relationship resolution.
-- `Supporter_Identity__c` is the sole NPC relationship lookup source. It stores
+- `Account` does not store a Funraise supporter ID.
+- `Supporter_Identity__c` is the sole NPC supporter ID source. It stores
   one row per known Funraise supporter ID, one associated email when supplied,
   and a required lookup to the Person Account.
 - Conflicting ownership or multiple donor matches are logged for manual review;
@@ -20,9 +19,8 @@ Two Funraise supporter IDs may identify one Salesforce Person Account:
 
 `frSupporterResolverTest.twoFunraiseIdsAndGiftsResolveToOnePersonAccount`
 exercises a Funraise-shaped supporter REST request and then two gift requests.
-It asserts that only the existing Person Account is used, its Account ID field
-advances to the last processed supporter, both identities are retained, and both
-`GiftTransaction.DonorId` values point to that Person Account.
+It asserts that only the existing Person Account is used, both identities are
+retained, and both `GiftTransaction.DonorId` values point to that Person Account.
 
 ## REST path finding
 
@@ -90,8 +88,11 @@ Funraise's setup instructions.
 
 ## Remaining production work
 
-- Decide how to seed existing Person Accounts into identity records before
-  enabling the new sync behavior.
+- Backfill every existing `Account.fr_ID__c` value into a verified identity row
+  before enabling this behavior or deleting the field from a populated org.
+- Delete an existing org field only after the backfill is verified. This source
+  removes the field from future deployments but does not include a recurring
+  destructive-deployment manifest.
 - Extend alias resolution to secondary supporter relationships not covered by
   this POC, including campaign fundraisers, registration contacts, and email
   activity.
