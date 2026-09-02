@@ -31,6 +31,8 @@
         <members>frSetupControllerTest</members>
         <members>frSubscription</members>
         <members>frSubscriptionTest</members>
+        <members>frSupporterResolver</members>
+        <members>frSupporterResolverTest</members>
         <members>frSyncRequestHandler</members>
         <members>frSyncRequestHandlerTest</members>
         <members>frSyncable</members>
@@ -90,6 +92,7 @@
         <members>Question__c</members>
         <members>Subscription__c</members>
         <members>Sync_Attempt__c</members>
+        <members>Supporter_Identity__c</members>
         <members>Sync_Attempt__c</members>
         <members>frField__mdt</members>
         <members>frMapping__c</members>

@@ -70,13 +70,25 @@ public class frDonor extends frModel implements frSyncable{
         supporter = null; // Generic SObject for both Account and Contact
         Boolean isNPC = frUtil.hasNPCobjects();
     
-        // Query based on fr_ID__c
-        List<SObject> records = Database.query(
-            'SELECT Id, fr_ID__c, LastName FROM ' + SOBJ_NAME + ' WHERE fr_ID__c = :frId'
-        );
-    
-        if (records != null && !records.isEmpty()) {
-            supporter = records.get(0);
+        List<SObject> records = new List<SObject>();
+        if(isNPC) {
+            frSupporterResolver.Result resolution = frSupporterResolver.resolveAccount(
+                frId,
+                getFrType(),
+                frId,
+                createLogRecord
+            );
+            if(resolution.ambiguous) {
+                return false;
+            }
+            supporter = resolution.account;
+        } else {
+            records = Database.query(
+                'SELECT Id, fr_ID__c, LastName FROM ' + SOBJ_NAME + ' WHERE fr_ID__c = :frId'
+            );
+            if(!records.isEmpty()) {
+                supporter = records.get(0);
+            }
         }
     
         String firstName = String.valueOf(request.get('firstName'));
@@ -93,7 +105,7 @@ public class frDonor extends frModel implements frSyncable{
             if (String.isNotBlank(firstName) && String.isNotBlank(lastName)) {
                 query += ' AND FirstName = :firstName AND LastName = :lastName';
             
-                query += ' ORDER BY CreatedDate DESC LIMIT 1';
+                query += ' ORDER BY CreatedDate DESC LIMIT 2';
         
                 records = Database.query(query);
                 if(isNPC) {
@@ -102,13 +114,14 @@ public class frDonor extends frModel implements frSyncable{
                 else {
                     supporter = applyMatch(records, frId);
                 }
+                if(records.size() > 1) return false;
             }
         }
         //match on just email
         if (supporter == null && String.isNotBlank(email)) {
             String query = 'SELECT Id, fr_ID__c, LastName FROM ' + SOBJ_NAME + ' WHERE ' + emailField + ' = :email';
     
-            query += ' ORDER BY CreatedDate DESC LIMIT 1';
+            query += ' ORDER BY CreatedDate DESC LIMIT 2';
     
             records = Database.query(query);
             if(isNPC) {
@@ -117,6 +130,7 @@ public class frDonor extends frModel implements frSyncable{
             else {
                 supporter = applyMatch(records, frId);
             }
+            if(records.size() > 1) return false;
         }
     
         // If still not found, try matching based on address
@@ -144,10 +158,15 @@ public class frDonor extends frModel implements frSyncable{
                 if (String.isNotBlank(postalCode)) {
                     byAddress += ' AND ' + mailingPostalCodeField + ' = :postalCode';
                 }
-                byAddress += ' ORDER BY CreatedDate DESC LIMIT 1';
+                byAddress += ' ORDER BY CreatedDate DESC LIMIT 2';
     
                 records = Database.query(byAddress);
-                supporter = applyMatch(records, frId);
+                if(isNPC) {
+                    supporter = applyAccountMatch(records, frId);
+                } else {
+                    supporter = applyMatch(records, frId);
+                }
+                if(records.size() > 1) return false;
             }
         }
     
@@ -161,7 +180,33 @@ public class frDonor extends frModel implements frSyncable{
             }
         }
     
-        // Apply mappings
+        String previousFrId = isNPC && supporter.Id != null
+            ? (String) supporter.get('fr_ID__c')
+            : null;
+        String previousEmail = null;
+        if(isNPC && supporter.Id != null) {
+            Id supporterId = supporter.Id;
+            List<SObject> persistedAccounts = Database.query(
+                'SELECT PersonEmail FROM Account WHERE Id = :supporterId'
+            );
+            if(!persistedAccounts.isEmpty()) {
+                previousEmail = (String) persistedAccounts.get(0).get('PersonEmail');
+            }
+            if(String.isNotBlank(previousFrId) &&
+               !frSupporterResolver.ensureIdentity(
+                   (Account) supporter,
+                   previousFrId,
+                   previousEmail,
+                   getFrType(),
+                   frId,
+                   createLogRecord
+               )) {
+                return false;
+            }
+        }
+
+        // frModel advances Account.fr_ID__c to the incoming supporter ID. The
+        // previous ID and email have already been retained as an identity.
         applyMappings(supporter, request);
     
         if (String.isBlank((String)supporter.get('LastName'))) {
@@ -181,12 +226,29 @@ public class frDonor extends frModel implements frSyncable{
                 frUtil.logException(getFrType(), frId, ex);
             }
         }
+
+        if(result && isNPC) {
+            result = frSupporterResolver.upsertIdentity(
+                (Account) supporter,
+                frId,
+                email,
+                getFrType(),
+                frId,
+                createLogRecord
+            );
+        }
     
         return result;
     }
     
     private Contact applyMatch(List<Contact> matchResults, String frId) {
-        if(matchResults != null && matchResults.size() > 0) {
+        if(matchResults != null && matchResults.size() > 1) {
+            frSupporterResolver.logAmbiguousMatch(
+                getFrType(), frId, frId, 'multiple Contacts match the incoming supporter data', createLogRecord
+            );
+            return null;
+        }
+        if(matchResults != null && matchResults.size() == 1) {
             Contact donor = matchResults.get(0);
             donor.fr_ID__c = frId;
             return donor;
@@ -195,10 +257,14 @@ public class frDonor extends frModel implements frSyncable{
     }
 
     private Account applyAccountMatch(List<Account> matchResults, String frId) {
-        if(matchResults != null && matchResults.size() > 0) {
-            Account donor = matchResults.get(0);
-            donor.fr_ID__c = frId;
-            return donor;
+        if(matchResults != null && matchResults.size() > 1) {
+            frSupporterResolver.logAmbiguousMatch(
+                getFrType(), frId, frId, 'multiple Person Accounts match the incoming supporter data', createLogRecord
+            );
+            return null;
+        }
+        if(matchResults != null && matchResults.size() == 1) {
+            return matchResults.get(0);
         }
         return null;
     }
@@ -232,6 +298,9 @@ public class frDonor extends frModel implements frSyncable{
                     usedFields.add(fields.get(mapping.sf_Name__c));
                 }
             }
+            usedFields.add(Supporter_Identity__c.Funraise_Supporter_ID__c);
+            usedFields.add(Supporter_Identity__c.Email__c);
+            usedFields.add(Supporter_Identity__c.Supporter__c);
         }
         return usedFields;
     }
@@ -244,7 +313,8 @@ public class frDonor extends frModel implements frSyncable{
         }
         else {
             return new Set<Schema.SObjectType> {
-                    Account.SObjectType
+                    Account.SObjectType,
+                    Supporter_Identity__c.SObjectType
             };
         }
     }
