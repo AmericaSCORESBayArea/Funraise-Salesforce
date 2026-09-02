@@ -9,7 +9,7 @@ private class frSupporterResolverTest {
         Account supporter = frDonorTest.getTestAccount(false);
         supporter.put('PersonEmail', 'previous@example.com');
         insert supporter;
-        insert new Supporter_Identity__c(
+        insert new frSupporter_Identity__c(
             Funraise_Supporter_ID__c = '856',
             Email__c = 'previous@example.com',
             Supporter__c = supporter.Id
@@ -40,10 +40,10 @@ private class frSupporterResolverTest {
             'The alias supporter request must not create a duplicate Person Account'
         );
 
-        Map<String, Supporter_Identity__c> identitiesById = new Map<String, Supporter_Identity__c>();
-        for(Supporter_Identity__c identity : [
+        Map<String, frSupporter_Identity__c> identitiesById = new Map<String, frSupporter_Identity__c>();
+        for(frSupporter_Identity__c identity : [
             SELECT Funraise_Supporter_ID__c, Email__c, Supporter__c
-            FROM Supporter_Identity__c
+            FROM frSupporter_Identity__c
             WHERE Supporter__c = :supporter.Id
         ]) {
             identitiesById.put(identity.Funraise_Supporter_ID__c, identity);
@@ -86,7 +86,7 @@ private class frSupporterResolverTest {
             'An Account without an identity row must not resolve'
         );
 
-        insert new Supporter_Identity__c(
+        insert new frSupporter_Identity__c(
             Funraise_Supporter_ID__c = 'conflicting-id',
             Supporter__c = supporter.Id
         );

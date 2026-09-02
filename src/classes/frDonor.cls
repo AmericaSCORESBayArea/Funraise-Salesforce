@@ -263,9 +263,9 @@ public class frDonor extends frModel implements frSyncable{
                     usedFields.add(fields.get(mapping.sf_Name__c));
                 }
             }
-            usedFields.add(Supporter_Identity__c.Funraise_Supporter_ID__c);
-            usedFields.add(Supporter_Identity__c.Email__c);
-            usedFields.add(Supporter_Identity__c.Supporter__c);
+            usedFields.add(frSupporter_Identity__c.Funraise_Supporter_ID__c);
+            usedFields.add(frSupporter_Identity__c.Email__c);
+            usedFields.add(frSupporter_Identity__c.Supporter__c);
         }
         return usedFields;
     }
@@ -279,7 +279,7 @@ public class frDonor extends frModel implements frSyncable{
         else {
             return new Set<Schema.SObjectType> {
                     Account.SObjectType,
-                    Supporter_Identity__c.SObjectType
+                    frSupporter_Identity__c.SObjectType
             };
         }
     }

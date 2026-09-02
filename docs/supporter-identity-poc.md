@@ -11,7 +11,7 @@ CLI. Do not point it at a production Salesforce or Funraise environment.
 Two Funraise supporter IDs may identify one Salesforce Person Account:
 
 - `Account` does not store a Funraise supporter ID.
-- `Supporter_Identity__c` is the sole NPC supporter ID source. It stores
+- `frSupporter_Identity__c` is the sole NPC supporter ID source. It stores
   one row per known Funraise supporter ID, one associated email when supplied,
   and a required lookup to the Person Account.
 - Conflicting ownership or multiple donor matches are logged for manual review;

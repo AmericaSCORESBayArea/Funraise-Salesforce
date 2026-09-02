@@ -87,7 +87,7 @@ public class frDonorTest {
 
         String frId = String.valueOf(getTestRequest().get('id'));
         System.assertEquals(1, [
-            SELECT COUNT() FROM Supporter_Identity__c
+            SELECT COUNT() FROM frSupporter_Identity__c
             WHERE Funraise_Supporter_ID__c = :frId
         ]);
     }
@@ -544,7 +544,7 @@ public class frDonorTest {
 
         String frId = String.valueOf(getTestRequest().get('id'));
         System.assertEquals(1, [
-            SELECT COUNT() FROM Supporter_Identity__c
+            SELECT COUNT() FROM frSupporter_Identity__c
             WHERE Funraise_Supporter_ID__c = :frId
         ]);
     }
@@ -873,7 +873,7 @@ public class frDonorTest {
         if (emailField != null) {
             soql += ', Supporter__r.' + emailField;
         }
-        soql += ' FROM Supporter_Identity__c WHERE Funraise_Supporter_ID__c = :frId';
+        soql += ' FROM frSupporter_Identity__c WHERE Funraise_Supporter_ID__c = :frId';
 
         List<SObject> results = Database.query(soql);
         if (!results.isEmpty() && emailField != null) {
@@ -954,7 +954,7 @@ public class frDonorTest {
     }
 
     public static void createTestIdentity(Account account, String funraiseId) {
-        insert new Supporter_Identity__c(
+        insert new frSupporter_Identity__c(
             Funraise_Supporter_ID__c = funraiseId,
             Supporter__c = account.Id
         );
@@ -964,7 +964,7 @@ public class frDonorTest {
         Id accountId = account.Id;
         return [
             SELECT Funraise_Supporter_ID__c
-            FROM Supporter_Identity__c
+            FROM frSupporter_Identity__c
             WHERE Supporter__c = :accountId
             ORDER BY CreatedDate
             LIMIT 1
@@ -975,7 +975,7 @@ public class frDonorTest {
         return [
             SELECT Supporter__r.Id, Supporter__r.LastName, Supporter__r.PersonEmail,
                    Supporter__r.PersonMailingCountry
-            FROM Supporter_Identity__c
+            FROM frSupporter_Identity__c
             WHERE Funraise_Supporter_ID__c = :funraiseId
             LIMIT 1
         ].Supporter__r;

@@ -4,9 +4,9 @@ public with sharing class frSupporterResolver {
             return null;
         }
 
-        List<Supporter_Identity__c> identities = [
+        List<frSupporter_Identity__c> identities = [
             SELECT Supporter__c, Supporter__r.Id, Supporter__r.LastName
-            FROM Supporter_Identity__c
+            FROM frSupporter_Identity__c
             WHERE Funraise_Supporter_ID__c = :funraiseSupporterId
             WITH USER_MODE
             LIMIT 1
@@ -44,9 +44,9 @@ public with sharing class frSupporterResolver {
             return false;
         }
 
-        List<Supporter_Identity__c> identities = [
+        List<frSupporter_Identity__c> identities = [
             SELECT Id, Supporter__c, Email__c
-            FROM Supporter_Identity__c
+            FROM frSupporter_Identity__c
             WHERE Funraise_Supporter_ID__c = :funraiseSupporterId
             WITH USER_MODE
             LIMIT 1
@@ -62,8 +62,8 @@ public with sharing class frSupporterResolver {
             return false;
         }
 
-        Supporter_Identity__c identity = identities.isEmpty()
-            ? new Supporter_Identity__c(Funraise_Supporter_ID__c = funraiseSupporterId)
+        frSupporter_Identity__c identity = identities.isEmpty()
+            ? new frSupporter_Identity__c(Funraise_Supporter_ID__c = funraiseSupporterId)
             : identities.get(0);
         identity.Supporter__c = supporter.Id;
         if(String.isNotBlank(email)) {

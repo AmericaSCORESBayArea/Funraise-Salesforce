@@ -600,17 +600,17 @@
     </fieldPermissions>
     <fieldPermissions>
         <editable>true</editable>
-        <field>Supporter_Identity__c.Email__c</field>
+        <field>frSupporter_Identity__c.Email__c</field>
         <readable>true</readable>
     </fieldPermissions>
     <fieldPermissions>
         <editable>true</editable>
-        <field>Supporter_Identity__c.Funraise_Supporter_ID__c</field>
+        <field>frSupporter_Identity__c.Funraise_Supporter_ID__c</field>
         <readable>true</readable>
     </fieldPermissions>
     <fieldPermissions>
         <editable>true</editable>
-        <field>Supporter_Identity__c.Supporter__c</field>
+        <field>frSupporter_Identity__c.Supporter__c</field>
         <readable>true</readable>
     </fieldPermissions>
     <fieldPermissions>
@@ -707,7 +707,7 @@
         <allowEdit>true</allowEdit>
         <allowRead>true</allowRead>
         <modifyAllRecords>false</modifyAllRecords>
-        <object>Supporter_Identity__c</object>
+        <object>frSupporter_Identity__c</object>
         <viewAllRecords>false</viewAllRecords>
     </objectPermissions>
     <tabSettings>
