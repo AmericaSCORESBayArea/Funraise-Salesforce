@@ -72,16 +72,7 @@ public class frDonor extends frModel implements frSyncable{
     
         List<SObject> records = new List<SObject>();
         if(isNPC) {
-            frSupporterResolver.Result resolution = frSupporterResolver.resolveAccount(
-                frId,
-                getFrType(),
-                frId,
-                createLogRecord
-            );
-            if(resolution.ambiguous) {
-                return false;
-            }
-            supporter = resolution.account;
+            supporter = frSupporterResolver.resolveAccount(frId);
         } else {
             records = Database.query(
                 'SELECT Id, fr_ID__c, LastName FROM ' + SOBJ_NAME + ' WHERE fr_ID__c = :frId'
@@ -180,16 +171,15 @@ public class frDonor extends frModel implements frSyncable{
             }
         }
     
-        String previousFrId = isNPC && supporter.Id != null
-            ? (String) supporter.get('fr_ID__c')
-            : null;
+        String previousFrId = null;
         String previousEmail = null;
         if(isNPC && supporter.Id != null) {
             Id supporterId = supporter.Id;
             List<SObject> persistedAccounts = Database.query(
-                'SELECT PersonEmail FROM Account WHERE Id = :supporterId'
+                'SELECT fr_ID__c, PersonEmail FROM Account WHERE Id = :supporterId'
             );
             if(!persistedAccounts.isEmpty()) {
+                previousFrId = (String) persistedAccounts.get(0).get('fr_ID__c');
                 previousEmail = (String) persistedAccounts.get(0).get('PersonEmail');
             }
             if(String.isNotBlank(previousFrId) &&

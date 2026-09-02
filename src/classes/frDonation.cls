@@ -88,13 +88,7 @@ public class frDonation extends frModel implements frSyncable {
         if (String.isNotBlank(supporterFunraiseId)) {
             SObject supporter = null;
             if(frUtil.hasNPCobjects()) {
-                frSupporterResolver.Result resolution = frSupporterResolver.resolveAccount(
-                    supporterFunraiseId, getFrType(), funraiseId, createLogRecord
-                );
-                if(resolution.ambiguous) {
-                    return false;
-                }
-                supporter = resolution.account;
+                supporter = frSupporterResolver.resolveAccount(supporterFunraiseId);
             } else {
                 List<Contact> supporters = [
                     SELECT Id, AccountId FROM Contact WHERE fr_ID__c = :supporterFunraiseId

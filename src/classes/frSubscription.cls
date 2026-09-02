@@ -84,14 +84,9 @@ public class frSubscription extends frModel implements frSyncable {
         Decimal pledgeAmount = String.isNotBlank(strPledgeAmount) ? Decimal.valueOf(strPledgeAmount) : null;
         Id supporterId = null;
         if (frUtil.hasNPCobjects()) {
-            frSupporterResolver.Result resolution = frSupporterResolver.resolveAccount(
-                funraiseSupporterId, getFrType(), funraiseId, createLogRecord
-            );
-            if(resolution.ambiguous) {
-                return false;
-            }
-            if(resolution.account != null) {
-                supporterId = resolution.account.Id;
+            Account supporter = frSupporterResolver.resolveAccount(funraiseSupporterId);
+            if(supporter != null) {
+                supporterId = supporter.Id;
             }
         } else {
             List<Contact> contacts = [SELECT Id from Contact WHERE fr_Id__c = :funraiseSupporterId];

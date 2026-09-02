@@ -81,13 +81,7 @@ public class frAnswer extends frModel implements frSyncable {
         String funraiseSupporterId = String.valueOf(request.get('supporterId'));
         if(String.isNotBlank(funraiseSupporterId)) {
             if(frUtil.hasNPCobjects()) {
-                frSupporterResolver.Result resolution = frSupporterResolver.resolveAccount(
-                    funraiseSupporterId, getFrType(), funraiseId, createLogRecord
-                );
-                if(resolution.ambiguous) {
-                    return false;
-                }
-                supporter = resolution.account;
+                supporter = frSupporterResolver.resolveAccount(funraiseSupporterId);
             } else {
                 List<Contact> supporters = [
                     SELECT Id, AccountId FROM Contact WHERE fr_ID__c = :funraiseSupporterId

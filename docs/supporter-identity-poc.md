@@ -10,17 +10,18 @@ CLI. Do not point it at a production Salesforce or Funraise environment.
 
 Two Funraise supporter IDs may identify one Salesforce Person Account:
 
-- `Account.fr_ID__c` remains the latest directly synced Funraise supporter ID.
-- `Supporter_Identity__c` stores one row per known Funraise supporter ID, one
-  associated email when supplied, and a required lookup to the Person Account.
-- NPC relationship syncs resolve an ID against both locations.
+- `Account.fr_ID__c` may track the last successfully processed donor ID for
+  compatibility, but it does not participate in NPC relationship resolution.
+- `Supporter_Identity__c` is the sole NPC relationship lookup source. It stores
+  one row per known Funraise supporter ID, one associated email when supplied,
+  and a required lookup to the Person Account.
 - Conflicting ownership or multiple donor matches are logged for manual review;
   the code does not pick an arbitrary record.
 
 `frSupporterResolverTest.twoFunraiseIdsAndGiftsResolveToOnePersonAccount`
 exercises a Funraise-shaped supporter REST request and then two gift requests.
-It asserts that only the existing Person Account is used, its direct ID advances
-to the latest supporter, both identities are retained, and both
+It asserts that only the existing Person Account is used, its Account ID field
+advances to the last processed supporter, both identities are retained, and both
 `GiftTransaction.DonorId` values point to that Person Account.
 
 ## REST path finding

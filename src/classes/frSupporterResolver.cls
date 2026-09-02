@@ -1,57 +1,17 @@
 public with sharing class frSupporterResolver {
-    public class Result {
-        public Account account;
-        public Boolean ambiguous = false;
-    }
-
-    public static Result resolveAccount(
-        String funraiseSupporterId,
-        frUtil.Entity sourceType,
-        String sourceId,
-        Boolean createLogRecord
-    ) {
-        Result result = new Result();
+    public static Account resolveAccount(String funraiseSupporterId) {
         if(String.isBlank(funraiseSupporterId)) {
-            return result;
-        }
-
-        Map<Id, Account> candidates = new Map<Id, Account>();
-        List<SObject> canonicalAccounts = Database.query(
-            'SELECT Id, fr_ID__c, LastName FROM Account ' +
-            'WHERE fr_ID__c = :funraiseSupporterId WITH USER_MODE LIMIT 1'
-        );
-        for(SObject record : canonicalAccounts) {
-            Account account = (Account) record;
-            candidates.put(account.Id, account);
+            return null;
         }
 
         List<Supporter_Identity__c> identities = [
-            SELECT Supporter__c, Supporter__r.Id, Supporter__r.fr_ID__c,
-                   Supporter__r.LastName
+            SELECT Supporter__c, Supporter__r.Id, Supporter__r.LastName
             FROM Supporter_Identity__c
             WHERE Funraise_Supporter_ID__c = :funraiseSupporterId
             WITH USER_MODE
             LIMIT 1
         ];
-        for(Supporter_Identity__c identity : identities) {
-            if(identity.Supporter__c != null) {
-                candidates.put(identity.Supporter__c, identity.Supporter__r);
-            }
-        }
-
-        if(candidates.size() == 1) {
-            result.account = candidates.values().get(0);
-        } else if(candidates.size() > 1) {
-            result.ambiguous = true;
-            logAmbiguousMatch(
-                sourceType,
-                sourceId,
-                funraiseSupporterId,
-                'the direct Account ID and identity alias point to different Person Accounts',
-                createLogRecord
-            );
-        }
-        return result;
+        return identities.isEmpty() ? null : identities.get(0).Supporter__r;
     }
 
     public static Boolean upsertIdentity(

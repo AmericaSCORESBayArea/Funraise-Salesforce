@@ -77,7 +77,7 @@ private class frSupporterResolverTest {
     }
 
     @isTest
-    static void conflictingCanonicalAndAliasIdsAreNotGuessed() {
+    static void accountFieldDoesNotParticipateInResolution() {
         if(!frUtil.hasNPCobjects()) {
             return;
         }
@@ -85,6 +85,12 @@ private class frSupporterResolverTest {
         Account directMatch = frDonorTest.getTestAccount(false);
         directMatch.fr_ID__c = 'conflicting-id';
         insert directMatch;
+
+        System.assertEquals(
+            null,
+            frSupporterResolver.resolveAccount('conflicting-id'),
+            'An Account external ID without an identity row must not resolve'
+        );
 
         Account aliased = frDonorTest.getTestAccount(false);
         aliased.fr_ID__c = 'other-canonical-id';
@@ -96,22 +102,11 @@ private class frSupporterResolverTest {
             Supporter__c = aliased.Id
         );
 
-        frSupporterResolver.Result result = frSupporterResolver.resolveAccount(
-            'conflicting-id',
-            frUtil.Entity.DONATION,
-            'gift-with-conflict',
-            true
+        System.assertEquals(
+            aliased.Id,
+            frSupporterResolver.resolveAccount('conflicting-id').Id,
+            'The identity row must be authoritative even when an Account has the same external ID'
         );
-
-        System.assertEquals(null, result.account);
-        System.assertEquals(true, result.ambiguous);
-        Error__c error = [
-            SELECT Error__c
-            FROM Error__c
-            WHERE Funraise_Object_Id__c = 'gift-with-conflict'
-            LIMIT 1
-        ];
-        System.assert(error.Error__c.contains('Manual review is required'));
     }
 
     private static void createGift(String giftId, String supporterId) {
